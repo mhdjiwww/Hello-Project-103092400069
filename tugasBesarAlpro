@@ -1,0 +1,307 @@
+package main
+
+import "fmt"
+
+type dataUtama struct {
+	judul    string
+	kategori string
+	deadline string
+	status   string
+}
+
+const NMAX int = 100
+
+type tabTugas [NMAX]dataUtama
+
+func menu(A *tabTugas, n *int) { //function menu
+	var opsi int
+	fmt.Println("------------")
+	fmt.Println("TUGAS HARIAN")
+	fmt.Println("------------")
+	fmt.Println("1. Tambah Tugas")
+	fmt.Println("2. Mengubah Tugas")
+	fmt.Println("3. Hapus Tugas")
+	fmt.Println("4. Cari Tugas")
+	fmt.Println("5. Daftar Tugas")
+	fmt.Println("6. Urut tugas")
+	fmt.Println("7. Exit")
+	fmt.Println("--------------")
+	fmt.Scan(&opsi)
+	if opsi == 1 {
+		tambahTugas(A, n)
+	} else if opsi == 2 {
+		ubahTugas(A, *n)
+	} else if opsi == 3 {
+		hapusTugas(A, n)
+	} else if opsi == 4 {
+		cariTugas(A, *n)
+	} else if opsi == 5 {
+		daftarTugas(A, *n)
+	} else if opsi == 6 {
+		selection(A, n)
+	} else if opsi == 7 {
+		fmt.Println("Terima Kasih")
+	}
+}
+
+func tambahTugas(A *tabTugas, n *int) { //fucntion untuk menambah tugas
+	var judul, kategori string
+	fmt.Println("Tambahkan tugas yang ingin ditambah")
+	fmt.Println("Masukkan Judul Tugas:")
+	fmt.Scan(&judul)
+	fmt.Println("Masukkan kategori Tugas:")
+	fmt.Scan(&kategori)
+	for (judul != "-") && (*n < NMAX) { //selama judulnya tidak diinput "-"
+		if (findJudul(*A, judul, *n) == -1) || (findKategori(*A, kategori, *n) == -1) { //cek apakah judul dan kategori yg diinput sama atau tidak dgn input sebelumnya
+			fmt.Println("Masukkan Deadline(YYYY-MM-DD):")
+			fmt.Scan(&A[*n].deadline)
+			fmt.Println("masukkan status pengerjaan(belum/selesai):")
+			fmt.Scan(&A[*n].status)
+			A[*n].judul = judul
+			A[*n].kategori = kategori
+			(*n)++ //jumlah n data bertambah
+		} else {
+			fmt.Println("Tugas sudah ada. Masukkan Tugas lain")
+		}
+		fmt.Println("Masukkan Judul Tugas:")
+		fmt.Scan(&judul)
+		if judul != "-" {
+			fmt.Println("Masukkan Kategori tugas:")
+			fmt.Scan(&kategori)
+		}
+	}
+}
+
+func findJudul(A tabTugas, jumpa string, n int) int { // function untuk pencari judul menggunakan sequential search
+	var i, idx int
+	idx = -1
+	i = 0
+	for i < n && idx == -1 {
+		if A[i].judul == jumpa {
+			idx = i
+		}
+		i++
+	}
+	return idx
+}
+
+func findKategori(A tabTugas, jumpa string, n int) int { //function untuk pencari kategori menggunakan sequential search
+	var i, idx int
+	idx = -1
+	i = 0
+	for i < n && idx == -1 {
+		if A[i].kategori == jumpa {
+			idx = i
+		}
+		i++
+	}
+	return idx
+}
+
+func ubahTugas(A *tabTugas, n int) { // function untuk mengubah tugas dengan sequential search
+	var jumpaJudul, jumpaKategori, x string
+	var idx int
+
+	idx = -1
+	fmt.Println("Masukkan judulnya")
+	fmt.Scan(&jumpaJudul)
+	fmt.Println("Masukkan Kategori")
+	fmt.Scan(&jumpaKategori)
+
+	for i := 0; i < n; i++ {
+		if A[i].judul == jumpaJudul && A[i].kategori == jumpaKategori && idx == -1 {
+			idx = i
+
+		}
+	}
+	if idx != -1 {
+		fmt.Println("Masukkan status baru:")
+		fmt.Scan(&x)
+		A[idx].status = x
+		fmt.Println("Data sudah diedit")
+		daftarTugas(A, n)
+	} else {
+		fmt.Println("Data tidak ada disini")
+	}
+
+}
+
+func daftarTugas(A *tabTugas, n int) { // function untuk menampilkan tugas
+	var k int
+	fmt.Printf("%20s | %20s | %10s | %10s\n", "JUDUL", "KATEGORI", "DEADLINE", "STATUS")
+	k = 0
+	for k < n {
+		fmt.Printf("%20s | %20s | %10s | %10s\n", A[k].judul, A[k].kategori, A[k].deadline, A[k].status)
+		k++
+	}
+
+}
+
+func cariTugas(A *tabTugas, n int) { // funtion untuk mencari tugas menggunakan sequential search
+	var i int
+	var jumpa, pilihan, tanggal string
+	var hasil, idx int
+	fmt.Println("Mau Cari Berdasarkan Apa?(kategori/deadline)")
+	fmt.Scan(&pilihan)
+	if pilihan == "kategori" {
+		fmt.Println("masukkan kategorinya")
+		fmt.Scan(&jumpa)
+		i = 0
+		ketemu := false
+		for i < n {
+			if A[i].kategori == jumpa {
+				fmt.Println(A[i].judul, A[i].kategori, A[i].deadline, A[i].status)
+				ketemu = true
+			}
+			i++
+		}
+		if ketemu == false {
+			fmt.Println("Tugas Tidak ada disini")
+		}
+	} else if pilihan == "deadline" {
+		fmt.Println("masukkan Deadlinenya(YYYY-MM-DD):")
+		fmt.Scan(&jumpa)
+		hasil = binarydeadline(A, n, jumpa)
+		if hasil == -1 {
+			fmt.Println("Tugas tidak ada disini")
+		} else {
+			fmt.Println(A[hasil].judul, A[hasil].kategori, A[hasil].deadline, A[hasil].status)
+		}
+	}
+	fmt.Scan(&tanggal)
+	for i := 0; i < n; i++ {
+		if A[i].deadline == tanggal {
+			idx = i
+		}
+	}
+	j := idx
+	for j < n {
+		fmt.Println(A[j].judul, A[j].kategori, A[j].deadline, A[j].status)
+		j++
+	}
+}
+
+func hapusTugas(A *tabTugas, n *int) { //function untuk hapus tugas
+	var idx int
+	var jumpaJudul, jumpaKategori string
+
+	idx = -1
+	fmt.Println("masukkan judulnya")
+	fmt.Scan(&jumpaJudul)
+	fmt.Println("Masukkan Kategori")
+	fmt.Scan(&jumpaKategori)
+
+	for i := 0; i < *n; i++ {
+		if A[i].judul == jumpaJudul && A[i].kategori == jumpaKategori && idx == -1 {
+			idx = i
+		}
+	}
+
+	if idx != -1 { // menggeser elemen ke kiri
+		for i := idx; i < *n-1; i++ {
+			A[i] = A[i+1]
+		}
+		*n = *n - 1
+		fmt.Println("data sudah dihapus")
+	} else {
+		fmt.Println("Data tidak ada")
+	}
+	daftarTugas(A, *n)
+
+}
+
+func selectiondeadlineDesc(A *tabTugas, n *int) { //function untuk mengurutkan deadline secara acending menggunakan selection sort
+	var i, idx, pass int // secara descending (besar ke kecil)
+	var temp dataUtama
+	for pass = 1; pass <= *n-1; pass++ {
+		idx = pass - 1
+		for i = pass; i <= *n-1; i++ {
+			if A[i].deadline > A[idx].deadline {
+				idx = i
+			}
+		}
+		temp = A[idx]
+		A[idx] = A[pass-1]
+		A[pass-1] = temp
+
+	}
+}
+
+func selectiondeadlineAsc(A *tabTugas, n *int) { //function untuk mengurutkan deadline secara acending menggunakan selection sort
+	var i, idx, pass int // secara ascending (kecil ke besar)
+	var temp dataUtama
+	for pass = 1; pass <= *n-1; pass++ {
+		idx = pass - 1
+		for i = pass; i <= *n-1; i++ {
+			if A[i].deadline < A[idx].deadline {
+				idx = i
+			}
+		}
+		temp = A[idx]
+		A[idx] = A[pass-1]
+		A[pass-1] = temp
+
+	}
+}
+
+func insertionStatus(A *tabTugas, n *int) { //selection sort
+	var i, j int
+	var temp dataUtama
+	for i = 1; i <= *n-1; i++ {
+		temp = A[i]
+		j = i - 1
+		for j >= 0 && A[j].status == "selesai" && temp.status == "belum" {
+			A[j+1] = A[j]
+			j--
+		}
+		A[j+1] = temp
+
+	}
+}
+
+func selection(A *tabTugas, n *int) { // function untuk mengurutkan dengan pilihan status/deadline
+	var pilihan, urut string
+	fmt.Println("Ingin mengurutkan Berdasarkan apa?(status/deadline):")
+	fmt.Scan(&pilihan)
+	if pilihan == "status" {
+		insertionStatus(A, n)
+		daftarTugas(A, *n)
+	} else if pilihan == "deadline" {
+		fmt.Println("Urutkan secara:(Asc/Desc)")
+		fmt.Scan(&urut)
+		if urut == "Asc" {
+			selectiondeadlineAsc(A, n)
+			daftarTugas(A, *n)
+		} else if urut == "Desc" {
+			selectiondeadlineDesc(A, n)
+			daftarTugas(A, *n)
+		}
+	}
+}
+
+func binarydeadline(A *tabTugas, n int, temu string) int {
+	var F, B, T, M int
+	F = -1
+	B = 0
+	T = n - 1
+	for (B <= T) && (F == -1) {
+		M = (B + T) / 2
+		if A[M].deadline == temu {
+			F = M
+		} else if A[M].deadline < temu {
+			B = M + 1
+		} else if A[M].deadline > temu {
+			T = M - 1
+		}
+	}
+	return F
+}
+
+func main() { // fungsi utama
+	var data tabTugas
+	var nTugas, opsi int
+	nTugas = 0
+	for opsi != 7 {
+		menu(&data, &nTugas)
+	}
+}
