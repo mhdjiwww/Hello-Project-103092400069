@@ -1,3 +1,4 @@
+// ini adalah sistem manajemen tugas harian
 package main
 
 import "fmt"
